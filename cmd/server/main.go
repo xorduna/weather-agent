@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/acai-travel/tech-challenge/internal/observability"
+	"log"
 	"log/slog"
 	"net/http"
 
+	"context"
 	"github.com/acai-travel/tech-challenge/internal/chat"
 	"github.com/acai-travel/tech-challenge/internal/chat/assistant"
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
@@ -16,6 +19,12 @@ import (
 )
 
 func main() {
+	shutdown, err := observability.InitTracer()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer shutdown(context.Background())
+
 	mongo := mongox.MustConnect()
 
 	repo := model.New(mongo)

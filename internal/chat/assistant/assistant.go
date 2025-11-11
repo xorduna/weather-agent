@@ -6,9 +6,12 @@ import (
 	"github.com/acai-travel/tech-challenge/internal/chat/assistant/tools"
 	"github.com/acai-travel/tech-challenge/internal/chat/model"
 	"github.com/openai/openai-go/v2"
+	"go.opentelemetry.io/otel"
 	"log/slog"
 	"strings"
 )
+
+var tracer = otel.Tracer("assistant")
 
 type Assistant struct {
 	cli             openai.Client
@@ -50,6 +53,9 @@ func New() *Assistant {
 }
 
 func (a *Assistant) Title(ctx context.Context, conv *model.Conversation) (string, error) {
+	ctx, span := tracer.Start(ctx, "Assistant.Reply")
+	defer span.End()
+
 	if len(conv.Messages) == 0 {
 		return "An empty conversation", nil
 	}
@@ -91,6 +97,9 @@ func (a *Assistant) Title(ctx context.Context, conv *model.Conversation) (string
 }
 
 func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string, error) {
+	ctx, span := tracer.Start(ctx, "Assistant.Reply")
+	defer span.End()
+
 	if len(conv.Messages) == 0 {
 		return "", errors.New("conversation has no messages")
 	}
