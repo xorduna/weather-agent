@@ -28,7 +28,13 @@ func NewServer(repo *model.Repository, assist Assistant) *Server {
 	return &Server{repo: repo, assist: assist}
 }
 
+type titleRequest struct {
+	Title string
+	Err   error
+}
+
 func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversationRequest) (*pb.StartConversationResponse, error) {
+	epoch := time.Now()
 	conversation := &model.Conversation{
 		ID:        primitive.NewObjectID(),
 		Title:     "Untitled conversation",
@@ -47,13 +53,12 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 		return nil, twirp.RequiredArgumentError("message")
 	}
 
-	// choose a title
-	title, err := s.assist.Title(ctx, conversation)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to generate conversation title", "error", err)
-	} else {
-		conversation.Title = title
-	}
+	titleChan := make(chan titleRequest, 1)
+
+	go func() {
+		title, err := s.assist.Title(ctx, conversation)
+		titleChan <- titleRequest{Title: title, Err: err}
+	}()
 
 	// generate a reply
 	reply, err := s.assist.Reply(ctx, conversation)
@@ -69,9 +74,19 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 		UpdatedAt: time.Now(),
 	})
 
+	// Wait for title generation to complete
+	titleResp := <-titleChan
+	if titleResp.Err != nil {
+		slog.ErrorContext(ctx, "Failed to generate conversation title", "error", err)
+	} else {
+		conversation.Title = titleResp.Title
+	}
+
 	if err := s.repo.CreateConversation(ctx, conversation); err != nil {
 		return nil, err
 	}
+
+	slog.InfoContext(ctx, "Successfully created conversation", "conversation_id", conversation.ID, "duration_ms", time.Since(epoch).Milliseconds())
 
 	return &pb.StartConversationResponse{
 		ConversationId: conversation.ID.Hex(),
