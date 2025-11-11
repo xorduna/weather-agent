@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"context"
 	"github.com/openai/openai-go/v2"
 	"time"
 )
@@ -19,6 +20,6 @@ func (t *TodayTool) Parameters() openai.FunctionParameters {
 	return openai.FunctionParameters{}
 }
 
-func (t *TodayTool) Execute(args ...string) (string, error) {
+func (t *TodayTool) Execute(ctx context.Context, args ...string) (string, error) {
 	return time.Now().Format(time.RFC3339), nil
 }

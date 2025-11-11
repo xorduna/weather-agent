@@ -20,7 +20,7 @@ type Tool interface {
 	Name() string
 	Description() string
 	Parameters() openai.FunctionParameters
-	Execute(args ...string) (string, error)
+	Execute(ctx context.Context, args ...string) (string, error)
 }
 
 func New() *Assistant {
@@ -135,7 +135,9 @@ func (a *Assistant) Reply(ctx context.Context, conv *model.Conversation) (string
 					return "", errors.New("unknown tool call: " + call.Function.Name)
 				} else {
 					slog.InfoContext(ctx, "Executing tool", "name", call.Function.Name)
-					answer, _ := a.registeredTools[call.Function.Name].Execute()
+
+					// For the sake of simplicity, we ignore the error from tool execution here.
+					answer, _ := a.registeredTools[call.Function.Name].Execute(ctx, call.Function.Arguments)
 					msgs = append(msgs, openai.ToolMessage(answer, call.ID))
 				}
 			}

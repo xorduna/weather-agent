@@ -1,6 +1,11 @@
 package tools
 
-import "github.com/openai/openai-go/v2"
+import (
+	"context"
+	"encoding/json"
+	"github.com/openai/openai-go/v2"
+	"log/slog"
+)
 
 type WeatherTool struct{}
 
@@ -24,6 +29,17 @@ func (w *WeatherTool) Parameters() openai.FunctionParameters {
 	}
 }
 
-func (w *WeatherTool) Execute(args ...string) (string, error) {
+func (w *WeatherTool) Execute(ctx context.Context, args ...string) (string, error) {
+
+	var parameters struct {
+		Location string `json:"location"`
+	}
+
+	if err := json.Unmarshal([]byte(args[0]), &parameters); err != nil {
+		return "failed to parse tool call arguments: " + err.Error(), nil
+	}
+
+	slog.InfoContext(ctx, "Executing WeatherTool", "location", parameters.Location)
+
 	return "Weather is fine.", nil
 }

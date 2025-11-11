@@ -79,14 +79,11 @@ func (h *HolidaysTool) Parameters() openai.FunctionParameters {
 
 }
 
-func (h *HolidaysTool) Execute(args ...string) (string, error) {
+func (h *HolidaysTool) Execute(ctx context.Context, args ...string) (string, error) {
 	link := "https://www.officeholidays.com/ics/spain/catalonia"
 	if v := os.Getenv("HOLIDAY_CALENDAR_LINK"); v != "" {
 		link = v
 	}
-
-	// For the sake of simplicity we use background context here. In a real-world scenario, consider passing a proper context.
-	ctx := context.Background()
 
 	events, err := LoadCalendar(ctx, link)
 	if err != nil {
