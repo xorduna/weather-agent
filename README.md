@@ -113,12 +113,26 @@ Run the tests using:
 go test ./...
 ```
 
+## Traces
+
+Traces and metrics are exposed via Jaeger. Jaeger UI is available at [http://localhost:16686](http://localhost:16686) once the server is running.
+
 ## Tasks
 
 **You can complete as many tasks as you like**, you can skip tasks that do not appeal to you.
 The more tasks you complete, the better we can assess your skills.
 
 We would like you to spend at least 1 hour on the challenge.
+
+### Taks completed:
+
+- 1.1 - Fix conversation title -> Done
+- 1.2 - Optimize performance for the StartConversation API -> Done (using goroutine for title generation)
+- 2.1 - Fix the weather -> Done (using Weather API)
+- 2.2 - Created new tool for forecast information -> Done
+- 3.1 - Refactor tools -> Done (refactored tools has been done prior to fix weather and provide weather forecast, so tools are easier to extend)
+- 3.2 - Created forecast as new tool -> Done
+- 5.2 - Instrument web server -> Done (Added basic traces) (It was more simple to start with traces and jaeger than metrics with OpenTelemetry)
 
 ### Task 1: Fix conversation title
 
