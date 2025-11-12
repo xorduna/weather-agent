@@ -77,6 +77,7 @@ Start the application:
 1. Set your OpenAI API key in the environment variable `OPENAI_API_KEY`.
    ```bash
    export OPENAI_API_KEY=your_openai_api_key
+   export WEATHER_API_KEY=your_weather_api_key 
    ```
 2. Use make to start MongoDB and the application. Make sure docker daemon is running.
    ```bash
