@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"github.com/acai-travel/tech-challenge/internal/observability"
 	"go.opentelemetry.io/otel"
 	"log/slog"
 	"strings"
@@ -36,11 +37,12 @@ type titleRequest struct {
 
 var tracer = otel.Tracer("chat-server")
 
-func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversationRequest) (*pb.StartConversationResponse, error) {
+func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversationRequest) (resp *pb.StartConversationResponse, err error) {
 	ctx, span := tracer.Start(ctx, "StartConversation")
 	defer span.End()
-
 	epoch := time.Now()
+	defer observability.RecordRequest(ctx, "StartConversation", epoch, &err)
+
 	conversation := &model.Conversation{
 		ID:        primitive.NewObjectID(),
 		Title:     "Untitled conversation",
@@ -101,9 +103,11 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 	}, nil
 }
 
-func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConversationRequest) (*pb.ContinueConversationResponse, error) {
-	ctx, span := tracer.Start(ctx, "StartConversation")
+func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConversationRequest) (resp *pb.ContinueConversationResponse, err error) {
+	ctx, span := tracer.Start(ctx, "ContinueConversation")
 	defer span.End()
+	epoch := time.Now()
+	defer observability.RecordRequest(ctx, "ContinueConversation", epoch, &err)
 
 	if req.GetConversationId() == "" {
 		return nil, twirp.RequiredArgumentError("conversation_id")
@@ -147,13 +151,18 @@ func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConve
 	return &pb.ContinueConversationResponse{Reply: reply}, nil
 }
 
-func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversationsRequest) (*pb.ListConversationsResponse, error) {
+func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversationsRequest) (resp *pb.ListConversationsResponse, err error) {
+	ctx, span := tracer.Start(ctx, "ListConversations")
+	defer span.End()
+	epoch := time.Now()
+	defer observability.RecordRequest(ctx, "ListConversations", epoch, &err)
+
 	conversations, err := s.repo.ListConversations(ctx)
 	if err != nil {
 		return nil, twirp.InternalErrorWith(err)
 	}
 
-	resp := &pb.ListConversationsResponse{}
+	resp = &pb.ListConversationsResponse{}
 	for _, conv := range conversations {
 		conv.Messages = nil // Clear messages to avoid sending large data
 		resp.Conversations = append(resp.Conversations, conv.Proto())
@@ -162,7 +171,12 @@ func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversation
 	return resp, nil
 }
 
-func (s *Server) DescribeConversation(ctx context.Context, req *pb.DescribeConversationRequest) (*pb.DescribeConversationResponse, error) {
+func (s *Server) DescribeConversation(ctx context.Context, req *pb.DescribeConversationRequest) (resp *pb.DescribeConversationResponse, err error) {
+	ctx, span := tracer.Start(ctx, "DescribeConversation")
+	defer span.End()
+	epoch := time.Now()
+	defer observability.RecordRequest(ctx, "DescribeConversation", epoch, &err)
+
 	if req.GetConversationId() == "" {
 		return nil, twirp.RequiredArgumentError("conversation_id")
 	}

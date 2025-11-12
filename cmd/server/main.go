@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/acai-travel/tech-challenge/internal/observability"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"log"
 	"log/slog"
 	"net/http"
@@ -19,11 +21,20 @@ import (
 )
 
 func main() {
-	shutdown, err := observability.InitTracer()
+	shutdownTracer, err := observability.InitTracer()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer shutdown(context.Background())
+	defer shutdownTracer(context.Background())
+
+	shutdownMetrics := observability.InitMetrics(context.Background())
+	defer shutdownMetrics()
+
+	//Exposing metrics prometheus
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		log.Fatal(http.ListenAndServe(":2112", nil))
+	}()
 
 	mongo := mongox.MustConnect()
 
