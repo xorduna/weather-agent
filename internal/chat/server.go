@@ -102,7 +102,7 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 }
 
 func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConversationRequest) (*pb.ContinueConversationResponse, error) {
-	ctx, span := tracer.Start(ctx, "StartConversation")
+	ctx, span := tracer.Start(ctx, "ContinueConversation")
 	defer span.End()
 
 	if req.GetConversationId() == "" {
@@ -148,6 +148,9 @@ func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConve
 }
 
 func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversationsRequest) (*pb.ListConversationsResponse, error) {
+	ctx, span := tracer.Start(ctx, "ListConversations")
+	defer span.End()
+
 	conversations, err := s.repo.ListConversations(ctx)
 	if err != nil {
 		return nil, twirp.InternalErrorWith(err)
@@ -163,6 +166,9 @@ func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversation
 }
 
 func (s *Server) DescribeConversation(ctx context.Context, req *pb.DescribeConversationRequest) (*pb.DescribeConversationResponse, error) {
+	ctx, span := tracer.Start(ctx, "DescribeConversation")
+	defer span.End()
+
 	if req.GetConversationId() == "" {
 		return nil, twirp.RequiredArgumentError("conversation_id")
 	}
