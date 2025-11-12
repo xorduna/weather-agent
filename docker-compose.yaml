@@ -13,3 +13,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4318:4318"   # gRPC

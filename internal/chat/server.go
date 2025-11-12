@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"go.opentelemetry.io/otel"
 	"log/slog"
 	"strings"
 	"time"
@@ -33,7 +34,12 @@ type titleRequest struct {
 	Err   error
 }
 
+var tracer = otel.Tracer("chat-server")
+
 func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversationRequest) (*pb.StartConversationResponse, error) {
+	ctx, span := tracer.Start(ctx, "StartConversation")
+	defer span.End()
+
 	epoch := time.Now()
 	conversation := &model.Conversation{
 		ID:        primitive.NewObjectID(),
@@ -96,6 +102,9 @@ func (s *Server) StartConversation(ctx context.Context, req *pb.StartConversatio
 }
 
 func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConversationRequest) (*pb.ContinueConversationResponse, error) {
+	ctx, span := tracer.Start(ctx, "ContinueConversation")
+	defer span.End()
+
 	if req.GetConversationId() == "" {
 		return nil, twirp.RequiredArgumentError("conversation_id")
 	}
@@ -139,6 +148,9 @@ func (s *Server) ContinueConversation(ctx context.Context, req *pb.ContinueConve
 }
 
 func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversationsRequest) (*pb.ListConversationsResponse, error) {
+	ctx, span := tracer.Start(ctx, "ListConversations")
+	defer span.End()
+
 	conversations, err := s.repo.ListConversations(ctx)
 	if err != nil {
 		return nil, twirp.InternalErrorWith(err)
@@ -154,6 +166,9 @@ func (s *Server) ListConversations(ctx context.Context, req *pb.ListConversation
 }
 
 func (s *Server) DescribeConversation(ctx context.Context, req *pb.DescribeConversationRequest) (*pb.DescribeConversationResponse, error) {
+	ctx, span := tracer.Start(ctx, "DescribeConversation")
+	defer span.End()
+
 	if req.GetConversationId() == "" {
 		return nil, twirp.RequiredArgumentError("conversation_id")
 	}
