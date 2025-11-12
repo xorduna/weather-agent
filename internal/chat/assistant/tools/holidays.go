@@ -23,31 +23,6 @@ func LoadCalendar(ctx context.Context, link string) ([]*ics.VEvent, error) {
 	return cal.Events(), nil
 }
 
-/*
-	openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
-		Name:        "get_holidays",
-		Description: openai.String("Gets local bank and public holidays. Each line is a single holiday in the format 'YYYY-MM-DD: Holiday Name'."),
-		Parameters: openai.FunctionParameters{
-			"type": "object",
-			"properties": map[string]any{
-				"before_date": map[string]string{
-					"type":        "string",
-					"description": "Optional date in RFC3339 format to get holidays before this date. If not provided, all holidays will be returned.",
-				},
-				"after_date": map[string]string{
-					"type":        "string",
-					"description": "Optional date in RFC3339 format to get holidays after this date. If not provided, all holidays will be returned.",
-				},
-				"max_count": map[string]string{
-					"type":        "integer",
-					"description": "Optional maximum number of holidays to return. If not provided, all holidays will be returned.",
-				},
-			},
-		},
-	}),
-
-*/
-
 type HolidaysTool struct{}
 
 func (h *HolidaysTool) Name() string {

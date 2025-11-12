@@ -31,6 +31,8 @@ func New() *Assistant {
 	usedTools := []Tool{
 		&tools.WeatherTool{},
 		&tools.TodayTool{},
+		&tools.WeatherForecastTool{},
+		&tools.HolidaysTool{},
 	}
 
 	openaiTools := []openai.ChatCompletionToolUnionParam{}
